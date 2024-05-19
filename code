@@ -1,55 +1,20 @@
-# Import necessary libraries
-import kivy
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty
-from kivy.core.window import Window
-from kivy.clock import Clock
+import hashlib
+import binascii
+import mnemonic
+import bip32utils
 
-# Set window size
-Window.size = (400, 600)
+# Generate a new seed phrase
+mnemo = mnemonic.Mnemonic("english")
+seed_phrase = mnemo.generate(strength=128)
+print(f"Seed Phrase: {seed_phrase}")
 
-class Car(Widget):
-    velocity_x = NumericProperty(0)
+# Convert the seed phrase to a seed
+seed = mnemo.to_seed(seed_phrase)
 
-    def move(self):
-        self.x += self.velocity_x
+# Generate a Bitcoin address from the seed
+bip32_root_key = bip32utils.BIP32Key.fromEntropy(seed)
+bip32_child_key = bip32_root_key.ChildKey(0).ChildKey(0)
 
-class Train(Widget):
-    velocity_x = NumericProperty(0)
-
-    def move(self):
-        self.x += self.velocity_x
-
-class CrashGame(Widget):
-    car = Car()
-    train = Train()
-
-    def __init__(self, **kwargs):
-        super(CrashGame, self).__init__(**kwargs)
-        self.car.velocity_x = 0
-        self.train.velocity_x = 0
-        self.car.center_x = self.width / 4
-        self.train.center_x = 3 * self.width / 4
-        self.add_widget(self.car)
-        self.add_widget(self.train)
-
-        Clock.schedule_interval(self.update, 1.0 / 60.0)
-
-    def update(self, dt):
-        self.car.move()
-        self.train.move()
-
-        if self.car.collide_widget(self.train):
-            # Collision detected
-            self.car.velocity_x = 0
-            self.train.velocity_x = 0
-            print("Crash!")
-
-class CrashGameApp(App):
-    def build(self):
-        game = CrashGame()
-        return game
-
-if __name__ == '__main__':
-    CrashGameApp().run()
+# Get the Bitcoin address
+bitcoin_address = bip32_child_key.Address()
+print(f"Bitcoin Address: {bitcoin_address}")
