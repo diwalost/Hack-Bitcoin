@@ -18,3 +18,4 @@ bip32_child_key = bip32_root_key.ChildKey(0).ChildKey(0)
 # Get the Bitcoin address
 bitcoin_address = bip32_child_key.Address()
 print(f"Bitcoin Address: {bitcoin_address}")
+{get Bitcoin}
